@@ -1,0 +1,840 @@
+Git 小抄
+2013年07月08日 13:21:52
+
+* 设置用户名和email
+  git config --global user.name "bbb"
+  git config --global user.email "bbb@fff.com"
+
+** 查看配置
+  git config --list
+
+* 查看帮助
+  git help <verb>
+  git <verb> --help
+
+* 从当前目录初始化
+
+  要对现有的某个项目开始用 Git 管理，只需到此项目所在的目录，执行：
+
+  $ git init
+
+* 纳入版本控制
+  如果当前目录下有几个文件想要纳入版本控制，需要先用 git add 命令告诉 Git 开始对这些文件进行跟踪，然后提交：
+
+$ git add *.c
+$ git add README
+$ git commit -m 'initial project version'
+
+
+* 从现有仓库克隆
+克隆仓库的命令格式为 git clone [url]。比如，
+
+$ git clone git://github.com/schacon/grit.git
+
+
+* 从本地仓库克隆
+
+$ git clone /adad/dsd/.git
+
+
+* 检查当前文件状态
+$ git status
+* 忽略某些文件
+一般我们总会有些文件无需纳入 Git 的管理，也不希望它们总出现在未跟踪文件列表。通常都是些自动生成的文件，像是日志或者编译过程中创建的等等。
+我们可以创建一个名为 .gitignore 的文件，列出要忽略的文件模式，来看一个简单的例子：
+
+$ cat .gitignore
+*.[oa]
+*~
+
+第一行告诉 Git 忽略所有以 .o 或 .a 结尾的文件。一般这类对象文件和存档文件都是编译过程中出现的，我们用不着跟踪它们的版本。
+第二行告诉 Git 忽略所有以波浪符（~）结尾的文件，许多文本编辑软件（比如 Emacs）都用这样的文件名保存副本。
+此外，你可能还需要忽略 log，tmp 或者 pid 目录，以及自动生成的文档等等。要养成一开始就设置好 .gitignore 文件的习惯，
+以免将来误提交这类无用的文件。
+* 查看已暂存和未暂存的更新
+要查看尚未暂存的文件更新了哪些部分，不加参数直接输入 git diff
+若要看已经暂存起来的文件和上次提交时的快照之间的差异，可以用 git diff --cached 命令。
+* 提交更新
+运行提交命令 git commit
+也可以使用 -m 参数后跟提交说明的方式，在一行命令中提交更新:
+$ git commit -m "Story 182: Fix benchmarks for speed"
+
+* 暴力提交
+也就是提交的时候，跳过使用暂存区域。
+尽管使用暂存区域的方式可以精心准备要提交的细节，但有时候这么做略显繁琐。Git 提供了一个跳过使用暂存区域的方式，只要在提交的时候，
+给 git commit 加上 -a 选项，Git 就会自动把所有已经跟踪过的文件暂存起来一并提交，从而跳过 git add 步骤：
+
+$ git status
+# On branch master
+#
+# Changed but not updated:
+#
+#	modified:   benchmarks.rb
+#
+$ git commit -a -m 'added new benchmarks'
+
+* 移除文件
+要从 Git 中移除某个文件，就必须要从已跟踪文件清单中移除（确切地说，是从暂存区域移除），然后提交。可以用 git rm 命令完成此项工作，
+并连带从工作目录中删除指定的文件，这样以后就不会出现在未跟踪文件清单中了。
+$ rm grit.gemspec
+$ git status
+然后再运行 git rm 记录此次移除文件的操作：
+
+$ git rm grit.gemspec
+* 移动文件
+要在 Git 中对文件改名，可以这么做：
+
+$ git mv file_from file_to
+其实，运行 git mv 就相当于运行了下面三条命令：
+
+$ mv README.txt README
+$ git rm README.txt
+$ git add README
+* 查看提交历史
+在提交了若干更新之后，又或者克隆了某个项目，想回顾下提交历史，可以使用 git log 命令
+我们常用 -p 选项展开显示每次提交的内容差异，用 -2 则仅显示最近的两次更新：
+
+$ git log –p -2
+
+** 很好格式地查看提交历史。
+ git log --pretty=oneline
+
+* 撤消操作
+** 修改最后一次提交
+
+有时候我们提交完了才发现漏掉了几个文件没有加，或者提交信息写错了。想要撤消刚才的提交操作，可以使用 --amend 选项重新提交：
+
+$ git commit --amend
+** 取消已经暂存的文件
+小心用 git add * 全加到了暂存区域。该如何撤消暂存其中的一个文件呢？git status 命令的输出会告诉你怎么做：
+
+$ git add .
+$ git status
+# On branch master
+# Changes to be committed:
+#   (use "git reset HEAD <file>..." to unstage)
+#
+#       modified:   README.txt
+#       modified:   benchmarks.rb
+
+我们来试试取消暂存 benchmarks.rb 文件：
+
+$ git reset HEAD benchmarks.rb 
+benchmarks.rb: locally modified
+
+** 取消对文件的修改
+use "git checkout -- <file>..." to discard changes in working directory
+$ git checkout -- benchmarks.rb
+
+注意，这么做，有点危险，意味着以前对这个文件的修改会丢失。
+
+* 标签
+** 显示标签
+ git tag
+*** 列特定的标签
+git tag -l 'v1.4.2.*'
+v1.4.2.1
+v1.4.2.2
+v1.4.2.3
+v1.4.2.4
+** 打标签
+
+在git中创建带注释的标签非常简单，在运行’tag’命令时加上-a 就可以了。
+‘-m’指明标签信息，跟标签一起存储。如果你不使用-m指明标签信息，git会自动启动文本编辑器让你输入。
+
+ git tag -a v1.0 -m "my inital version."
+ git tag -a "smart" -m "my inital version."
+ git tag -a "卧槽！" -m "my inital version."
+** 查看相应标签的版本信息
+ git show v1.4
+** 轻量级标签
+ 轻量级标签实际上就是一个保存着对应提交对象的校验和信息的文件。要创建这样的标签,直接给出标签名字即可，
+轻量级标签实际上就是存在一个文件中的提交校验和–没有附加任何其他信息。
+创建轻量级标签的方法就是把上面’-a’,'-s’,'-m’这些选项都去掉。
+
+git tag "一个轻量级标签，哈哈"
+** 查看轻量级标签
+现在运行 git show 查看此标签信息，就只有相应的提交对象摘要。
+git show "一个轻量级标签，哈哈"
+
+** 给以前某个提交打标签
+*** 先显示以前的提交历史
+ git log --pretty=oneline
+结果：
+cd6139f24a60f96addabefb16317d7b2ef3174c9 added db
+99826ae8389cdb08e69d9528fb031b98ea9102e2 fix ip mod
+4bc39ed769a0b560f3d0dbb2f33000a1be49243f rm monster.log
+ee85a23078f94ddeb09a48b16857c2f87306548e test
+36d6c62b712afad3f4d70d013303a3ef71ebbf08 fix ip
+1c6428f45440b2c40ac1659ea80135b8c8e8d2a3 2end commit
+b0f0374d48bb10bcf140c5555168abd5de73337e added all ruby files.
+
+要给那"2end commit"加标签。记住其前面几位：1c6428f
+*** 再加tag
+git tag -a v1.2 1c6428f
+
+* 分支
+分支，乃Git必杀计。
+Git 的分支可谓是难以置信的轻量级，它的新建操作几乎可以在瞬间完成，
+并且在不同分支间切换起来也差不多一样快。和许多其他版本控制系统不同，
+Git 鼓励在工作流程中频繁使用分支与合并，哪怕一天之内进行许多次都没有关系.
+** 原理
+Git 中的分支，其实本质上仅仅是个指向 commit 对象的可变指针。Git 会使用
+master 作为分支的默认名字。在若干次提交后，你其实已经有了一个指向最后一次提交对象的 master 分支
+Git 又是如何创建一个新的分支的呢？答案很简单，创建一个新的分支指针。
+** 列分支
+git branch
+** 创建新分支
+git branch testing
+
+** HEAD的作用
+Git 是如何知道你当前在哪个分支上工作的呢？其实答案也很简单，它保存着一个名为 HEAD 的特别指针。
+请注意它和你熟知的许多其他版本控制系统（比如 Subversion 或 CVS）里的 HEAD 概念大不相同。
+在 Git 中，它是一个指向你正在工作中的本地分支的指针。
+** 切换到其他分支
+git checkout 分支
+实质：HEAD 在你转换分支时指向新的分支。
+另外，这一点值得牢记：Git 会把工作目录的内容恢复为检出某分支时它所指向的那个
+commit 的快照。
+它会自动添加、删除和修改文件以确保目录的内容和你上次提交时完全一样。
+
+** 创建一个分支并且立刻切换到它上去。
+git checkout -b new_branch
+
+** 分支合并
+
+*** 一、先切换到合并目标的分支上去，比如master
+git checkout master
+*** 二、运行merge命令。
+git merge hotfix
+
+** 删除一个分支
+git branch 的 -d 选项表示删除
+git branch -d hotfix
+
+
+
+
+* Rebase
+你可以把在 C3 里产生的变化补丁重新在 C4 的基础上打一遍。
+在 Git 里，这种操作叫做_衍合（rebase）_。
+有了 rebase 命令，就可以把在一个分支里提交的改变在另一个分支里重放一遍。
+$ git checkout experiment
+$ git rebase master
+它的原理是回到两个分支（你所在的分支和你想要衍合进去的分支）的共同祖先，提取你所在分支每次提交时产生的差异（diff），
+把这些差异分别保存到临时文件里，然后从当前分支转换到你需要衍合入的分支，依序施用每一个差异补丁文件
+
+现在，合并后的 C3（即现在的 C3’）所指的快照，同三方合并例子中的 C5 所指的快照内容一模一样了。
+
+最后整合得到的结果没有任何区别，但衍合能产生一个更为整洁的提交历史。
+
+你可以经常使用衍合，确保在远程分支里的提交历史更清晰。
+
+* 本地协议
+克隆一个本地仓库，可以用如下命令完成：
+先去一个干净的目录，然后：
+$ git clone ~/some_dir/.git
+
+基于文件仓库的优点在于它的简单，同时保留了现存文件的权限和网络访问权限。
+
+
+* 查看分支区别与进化历史
+ git show-branch 
+
+譬如我们要查看世系标号为 master^ 和 robin 的版本的差异情况，我们可以使用这样的命令：
+　　$ git diff master^ robin
+
+* 查看某两个版本中，同一个文件的差异
+
+* 用Meld更舒坦地看文件差异、分支差异。
+** 配置git meld
+** 一、安装meld
+
+
+** 二、然后的详细做法
+1. 把下面的代码，存为git-meld.pl, 放到/usr/local/bin/git-meld.pl下
+2. 改其属性，搞成可执行文件。
+sudo chmod 7 git-meld.pl 
+3. 打开~/.gitconfig，补充下面一行
+meld = !/usr/local/bin/git-meld.pl
+注意，不要掉"!"号。
+上述做法，其实是：
+https://github.com/wmanley/git-meld
+
+*** 代码如下：
+#!/usr/bin/perl
+
+### Copyright (C) 2010 Will Manley <will@williammanley.net>
+
+### This program is free software; you can redistribute it and/or modify
+### it under the terms of the GNU General Public License as published by
+### the Free Software Foundation; either version 2 of the License, or
+### (at your option) any later version.
+
+### This program is distributed in the hope that it will be useful,
+### but WITHOUT ANY WARRANTY; without even the implied warranty of
+### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+### GNU General Public License for more details.
+
+### You should have received a copy of the GNU General Public License
+### along with this program; if not, write to the Free Software
+### Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+use strict;
+use File::Basename;
+use Cwd;
+
+sub safe_cmd {
+my $cmd = shift;
+my $output = `$cmd`;
+if ($? != 0) {
+die("$cmd failed with exit code $?");
+}
+return $output;
+}
+
+sub safe_system {
+system(@_) == 0 || die ("system(" . @_ . ") failed!");
+return 0;
+}
+
+sub trim($)
+{
+my $string = shift;
+$string =~ s/^\s+//;
+$string =~ s/\s+$//;
+return $string;
+}
+
+# Gets the value of the given config name from git if it exists, otherwise
+# returns the default value given as the second argument
+sub get_config_or_default($$) {
+    (my $key, my $default) = @_;
+    my $value = trim(`git config --get $key`);
+    return ($value eq "") ? $default : $value;
+}
+
+# The command line possibilities are:
+# Compare staging area to working directory:
+# git meld [--options...] [--] [<paths>...]
+#
+# Compare source to staging area (source defaults to HEAD):
+# git meld [--options...] --cached <source> [--] [<paths>...]
+#
+# Show the differences between source and the working directory
+# git meld [--options...] <source> [--] [<paths>...]
+#
+# Show the differences between source and dest:
+# git meld [--options...] <source> <dest> [--] [<paths>...]
+#
+# Same as above:
+# git meld [--options...] <source>..<dest> [--] [<paths>...]
+#
+# Show all the changes in source that have occured since it was branched
+# from dest:
+# git meld [--options...] <commit1>...[<commit2>] [--] [<paths>...]
+#
+# This function parses the command line and extracts source and dest and returns
+# them as two elements in a list.
+sub parse_cmd(@)
+{
+    my @args = @_;
+    my $diff_opts = "";
+    my %opts;
+
+    # Get options to be sent to diff. These all start with --
+    while (my $arg = shift(@args)) {
+if ($arg =~ m/^-/ && $arg ne "--") {
+            $arg =~ m/^-+([^=]+)(=(.*))?$/;
+$opts{$1} = $3;
+$diff_opts += " \"$arg\"";
+}
+else {
+unshift(@args, $arg);
+last;
+}
+    }
+
+    my $source_tree = "";
+    my $dest_tree = "";
+
+    # Get tree-ishes to compare
+    if (scalar @args != 0 && $args[0] ne "--") {
+        my $commit1 = shift(@args);
+
+        if ($commit1 =~ m/^(.*)\.\.\.(.*)$/) {
+            my $branch_2 = $2 == "" ? "HEAD" : $2;
+            $source_tree = trim(safe_cmd("git merge-base $1 $branch_2"));
+            $dest_tree = $2;
+        }
+        elsif ($commit1 =~ m/^(.*)\.\.(.*)$/) {
+$source_tree = $1;
+$dest_tree = $2;
+        }
+        else {
+$source_tree = $commit1;
+if (scalar @args == 0) {
+}
+else {
+my $commit2 = shift(@args);
+if ($commit2 ne "--") {
+$dest_tree = $commit2;
+}
+}
+        }
+    }
+    return ($source_tree, $dest_tree, \%opts);
+}
+
+sub nul_seperated_string_to_list($) {
+    my $string = shift;
+    my @list = split(/\0/, $string);
+    return \@list;
+}
+
+sub shell_escape($) {
+    $_ = shift;
+    s/\\/\\\\/g;
+    s/\$/\\\$/g;
+    s/\`/\\\`/g;
+    return "\"$_\"";
+}
+
+# Copies files from a named tree into a directory
+# Parameters:
+# tree - A tree-ish
+# file_list - A list ref giving a list of filenames to copy
+# out_dir - The directory under which this tree should be reconstructed
+sub copy_files_named_tree($$$) {
+    (my $tree, my $file_list, my $out_dir) = @_;
+    if (scalar @$file_list == 0) {
+        return;
+    }
+    my $escaped_file_list = join(" ", map{shell_escape($_)} @$file_list);
+    safe_cmd("cd \"\$(git rev-parse --show-toplevel)\" && git archive $tree $escaped_file_list | tar -x -C \"$out_dir\"");
+}
+
+# Links the files given as a list in the first argument from the working
+# directory to the directory in the second argument
+#
+# These are linked rather than copied to allow the user to edit the files in the
+# diff viewer
+sub link_files_working_dir($$) {
+    (my $file_list, my $out_dir) = @_;
+    # Because we're diffing against the working directory we wish to create a
+    # tree of links in the dest folder mirroring that in the repo.
+    # TODO: Fix this so we don't have to loop over each filename somehow
+    foreach my $filename (@$file_list) {
+        my $dir = $filename;
+        safe_system("mkdir", "-p", dirname("$out_dir/$filename"));
+        safe_system("ln", "-s", cwd() . "/$filename", "$out_dir/$filename");
+    }
+}
+
+# Copies the files given as a list in the first argument from the staging area
+# to the directory in the second argument
+sub copy_files_staging_area($$) {
+    (my $filelist, my $outdir) = @_;
+    safe_system("git", "checkout-index", "--prefix=$outdir/", "--", @$filelist);
+}
+
+my $all_args = join(" ", map{ shell_escape($_) } @ARGV);
+(my $source_tree, my $dest_tree, my $opts) = parse_cmd(@ARGV);
+
+if (exists($opts->{"cached"}) || exists($opts->{"staged"})) {
+    ($dest_tree eq "") || die("Only one commit can be given with the option --cached. You gave \"" . $dest_tree . "\"");
+    if ($source_tree eq "") {
+        $source_tree = "HEAD";
+    }
+}
+
+# At this point we have parsed two commits and want to diff them
+my $git_dir = trim(safe_cmd("git rev-parse --show-cdup"));
+if ($git_dir eq "") {
+$git_dir = ".";
+}
+
+my $tmp_dir=trim(safe_cmd("mktemp -d -t git-meld.XXXXXX"));
+my $source_dir = "$tmp_dir/" . (($source_tree eq "") ? "staging_area" : $source_tree);
+my $dest_dir = "$tmp_dir/" . (($dest_tree eq "") ? "working_dir" : $dest_tree);
+
+safe_system("mkdir -p $source_dir");
+safe_system("mkdir -p $dest_dir");
+
+my $src_changed_files = nul_seperated_string_to_list(safe_cmd("git diff -z --diff-filter=DMTUXB --name-only $all_args"));
+my $dest_changed_files = nul_seperated_string_to_list(safe_cmd("git diff -z --diff-filter=ACMTUXB --name-only $all_args"));
+
+if ($source_tree eq "") {
+    copy_files_staging_area($src_changed_files, $source_dir);
+}
+else {
+    copy_files_named_tree($source_tree, $src_changed_files, $source_dir);
+}
+
+if (exists($opts->{"cached"}) || exists($opts->{"staged"})) {
+    copy_files_staging_area($dest_changed_files, $dest_dir);
+}
+elsif ($dest_tree eq "") {
+    link_files_working_dir($dest_changed_files, $dest_dir);
+}
+else {
+    copy_files_named_tree($dest_tree, $dest_changed_files, $dest_dir);
+}
+
+safe_system("chmod", "-R", "a-w", "$tmp_dir/");
+
+my $tool = get_config_or_default("treediff.tool", "meld");
+my $cmd = get_config_or_default("treediff.$tool.cmd", $tool);
+my $path = get_config_or_default("treediff.$tool.path", "");
+safe_system("$path$cmd", "$source_dir", "$dest_dir");
+
+safe_system("chmod", "-R", "u+w", "$tmp_dir/");
+safe_system("rm", "-Rf", $tmp_dir);
+
+
+
+
+
+三、使用
+git meld 即可。
+
+
+** 三、详细使用命令案例
+
+EXAMPLE
+
+***  Show the differences between the staging area and your working directory:
+$ git meld
+
+*** Show the differences between HEAD and the staging area (i.e. what would be commited if you were commit now:
+$ git meld --cached
+
+*** Show the differences between two commits ago and the working directory:
+$ git meld HEAD^^
+
+*** Show the differences between the tips of branch master and branch topic
+$ git meld master..topic
+
+*** Show all the changes made to branch topic since it branched off branch master
+
+$ git meld master...topic
+
+*** 显示当前版本与前一个标识为"4d3ef"的版本差异
+$ git meld 4d3ef
+
+
+
+* git status的中文乱码去除
+Git Status 中文乱码解决 
+只要一行就行了
+
+git config --global core.quotepath false
+
+
+* 与github拉上关系
+** 先注册github
+** 在本地，设置git的用户名和邮件，和github一致。
+git config --global user.name "Your Name Here"
+
+git config --global user.email "Your Name Here"
+
+** 在本地建立一个RSA Key
+有教程的，就在github
+
+https://help.github.com/articles/generating-ssh-keys
+
+
+Generating SSH Keys
+
+MAC WINDOWS LINUX ALL
+
+If you have decided not to use the recommended HTTPS method, we can use SSH keys to establish a secure connection between your computer and GitHub. The steps below will walk you through generating an SSH key and then adding the public key to your GitHub account.
+
+*** Step 1: Check for SSH keys
+
+
+Have an existing keypair you'd like to use? You can skip to Step 4.
+
+First, we need to check for existing ssh keys on your computer. Open up Terminal and run:
+
+cd ~/.ssh
+
+# Checks to see if there is a directory named ".ssh" in your user directory
+
+If it says "No such file or directory" skip to step 3. Otherwise continue to step 2.
+
+*** Step 2: Backup and remove existing SSH keys
+
+Since there is already an SSH directory you'll want to back the old one up and remove it:
+
+ls
+
+# Lists all the subdirectories in the current directory
+
+# config  id_rsa  id_rsa.pub  known_hosts
+
+mkdir key_backup
+
+# Makes a subdirectory called "key_backup" in the current directory
+
+
+cp id_rsa* key_backup
+
+# Copies the id_rsa keypair into key_backup
+
+
+rm id_rsa*
+
+# Deletes the id_rsa keypair
+
+*** Step 3: Generate a new SSH key
+
+To generate a new SSH key, enter the code below. 
+We want the default settings so when asked to enter a file in which to save the key, just press enter.
+
+ ssh-keygen -t rsa -C "your_email@youremail.com"
+
+# Creates a new ssh key using the provided email
+
+# Generating public/private rsa key pair.
+
+# Enter file in which to save the key (/home/you/.ssh/id_rsa):
+
+Now you need to enter a passphrase.
+
+Why do passphrases matter?
+
+# Enter passphrase (empty for no passphrase): [Type a passphrase]
+
+# Enter same passphrase again: [Type passphrase again]
+
+Which should give you something like this:
+
+# Your identification has been saved in /home/you/.ssh/id_rsa.
+
+# Your public key has been saved in /home/you/.ssh/id_rsa.pub.
+
+# The key fingerprint is:
+
+# 01:0f:f4:3b:ca:85:d6:17:a1:7d:f0:68:9d:f0:a2:db your_email@youremail.com
+
+*** Step 4: Add your SSH key to GitHub
+
+Run the following code to copy the key to your clipboard.
+
+sudo apt-get install xclip
+# Downloads and installs xclip
+
+
+xclip -sel clip < ~/.ssh/id_rsa.pub
+# Copies the contents of the id_rsa.pub file to your clipboard
+
+Be warned: it is important to copy the key exactly without adding newlines or whitespace. Thankfully the xclip command makes it easy to perform this setup perfectly.
+
+Go to your Account Settings
+
+Click "SSH Keys" in the left sidebar
+
+Click "Add SSH key"
+
+Paste your key into the "Key" field
+
+Click "Add key"
+
+Confirm the action by entering your GitHub password
+
+*** Step 5: Test everything out
+
+To make sure everything is working you'll now SSH to GitHub. When you do this, you will be asked to authenticate this action using your password, which for this purpose is the passphrase you created earlier. Don't change the git@github.com part. That's supposed to be there.
+
+ssh -T git@github.com
+
+# Attempts to ssh to github
+
+You may see this warning:
+
+# The authenticity of host 'github.com (207.97.227.239)' can't be established.
+
+# RSA key fingerprint is 16:27:ac:a5:76:28:2d:36:63:1b:56:4d:eb:df:a6:48.
+
+# Are you sure you want to continue connecting (yes/no)?
+
+Don't worry, this is supposed to happen. Verify that the fingerprint matches the one here and type "yes".
+
+# Hi username! You've successfully authenticated, but GitHub does not
+
+# provide shell access.
+
+If that username is correct, you've successfully set up your SSH key. Don't worry about the shell access thing, you don't want that anyway.
+
+If you see "access denied" please consider using HTTPS instead of SSH. If you need SSH start at these instructions for diagnosing the issue.
+
+
+
+** 映射本地项目到github
+git remote add origin https://github.com/username/Hello-World.git
+
+** 上传本地项目到github
+了解 remote
+remote 是显示远程仓库信息的命令
+显示远程仓库
+huangyineng@HUANGYINENG-PC ~/hello-world (master)
+$ git remote
+origin
+显示远程仓库地址
+huangyineng@HUANGYINENG-PC ~/hello-world (master)
+$ git remote -v
+origin  git://github.com/git/hello-world.git (fetch)
+origin  git://github.com/git/hello-world.git (push)
+2.       fetch 从远程拉下来，不与本地的合并，并建立一个分支
+huangyineng@HUANGYINENG-PC ~/hello-world (master)
+$ git fetch origin
+3.       pull 从远程拉下来，和本地的合并
+huangyineng@HUANGYINENG-PC ~/hello-world (master)
+$ git pull origin
+Already up-to-date.
+4.       push 提交到远程服务器
+huangyineng@HUANGYINENG-PC ~/hello-world (master)
+$ git push origin master
+** 我的执行过程
+ 1973  cd huoban_marrige/
+ 
+1974  ll
+
+ 1975  git status
+
+ 1976  git remote add origin git@github.com:chrisguo/npc_marriage.git
+
+ 1978  cd ~/.ssh
+
+ 1979  ls
+
+ 1980  ll
+
+ 1981  mkdir key_backup
+
+ 1982  cp id_rsa* key_backup/
+
+ 1983  rm id_rsa*
+
+ 1984  ssh-keygen -t rsa -C "guoxianghao@hotmail.com"
+
+ 1985  ll
+
+ 1986  sudo apt-get install xclip
+
+ 1987  xclip -sel clip < ~/.ssh/id_rsa.pub
+
+（上github在ssh号那里，拷贝粘贴了东西） 
+
+ 1988  ssh -T git@github.com
+
+ 1989  git config --global user.name "chrisguo"
+
+ 1990  git config --global user.email "guoxianghao@hotmail.com"
+
+ 1991  cd ..
+
+ 1992  cd game_work/
+
+ 1993  ll
+
+ 1994  cd huoban_marrige/
+
+ 1995  ll
+
+ 1996  git branch
+
+ 1997  git push origin master
+
+
+
+
+** 我的另外一个执行过程
+用https:// 出了错误，改为用ssh, 成功了。
+
+git remote add bj1 git@github.com:chrisguo/beijing_fushengji.git
+
+git remote -v
+
+git push bj1 master
+
+
+* 创建命令别名
+Git 并不会推断你输入的几个字符将会是哪条命令，不过如果想偷懒，少敲几个命令的字符，可以用 git config 为命令设置别名。来看看下面的例子：
+
+$ git config --global alias.co checkout
+$ git config --global alias.br branch
+$ git config --global alias.ci commit
+$ git config --global alias.st status
+
+现在，如果要输入 git commit 只需键入 git ci 即可。而随着 Git 使用的深入，会有很多经常要用到的命令，遇到这种情况，不妨建个别名提高效率。
+* git最佳实践
+一、主分支Master
+首先，代码库应该有一个、且仅有一个主分支。所有提供给用户使用的正式版本，都在这个主分支上发布。
+Git主分支的名字，默认叫做Master。它是自动建立的，版本库初始化以后，默认就是在主分支在进行开发。
+二、开发分支Develop
+主分支只用来分布重大版本，日常开发应该在另一条分支上完成。我们把开发用的分支，叫做Develop。
+这个分支可以用来生成代码的最新隔夜版本（nightly）。如果想正式对外发布，就在Master分支上，对Develop分支进行"合并"（merge）。
+Git创建Develop分支的命令：
+　　git checkout -b develop master
+将Develop分支发布到Master分支的命令：
+　　# 切换到Master分支
+　　git checkout master
+　　# 对Develop分支进行合并
+　　git merge --no-ff develop
+这里稍微解释一下，上一条命令的--no-ff参数是什么意思。默认情况下，Git执行"快进式合并"（fast-farward merge），会直接将Master分支指向Develop分支。
+
+使用--no-ff参数后，会执行正常合并，在Master分支上生成一个新节点。为了保证版本演进的清晰，我们希望采用这种做法。
+
+三、临时性分支
+前面讲到版本库的两条主要分支：Master和Develop。前者用于正式发布，后者用于日常开发。其实，常设分支只需要这两条就够了，不需要其他了。
+但是，除了常设分支以外，还有一些临时性分支，用于应对一些特定目的的版本开发。临时性分支主要有三种：
+　　* 功能（feature）分支
+　　* 预发布（release）分支
+　　* 修补bug（fixbug）分支
+这三种分支都属于临时性需要，使用完以后，应该删除，使得代码库的常设分支始终只有Master和Develop。
+四、 功能分支
+接下来，一个个来看这三种"临时性分支"。
+第一种是功能分支，它是为了开发某种特定功能，从Develop分支上面分出来的。开发完成后，要再并入Develop。
+功能分支的名字，可以采用feature-*的形式命名。
+创建一个功能分支：
+　　git checkout -b feature-x develop
+开发完成后，将功能分支合并到develop分支：
+　　git checkout develop
+　　git merge --no-ff feature-x
+删除feature分支：
+　　git branch -d feature-x
+五、预发布分支
+第二种是预发布分支，它是指发布正式版本之前（即合并到Master分支之前），我们可能需要有一个预发布的版本进行测试。
+预发布分支是从Develop分支上面分出来的，预发布结束以后，必须合并进Develop和Master分支。它的命名，可以采用release-*的形式。
+创建一个预发布分支：
+　　git checkout -b release-1.2 develop
+确认没有问题后，合并到master分支：
+　　git checkout master
+　　git merge --no-ff release-1.2
+　　# 对合并生成的新节点，做一个标签
+　　git tag -a 1.2
+再合并到develop分支：
+　　git checkout develop
+　　git merge --no-ff release-1.2
+最后，删除预发布分支：
+　　git branch -d release-1.2
+六、修补bug分支
+最后一种是修补bug分支。软件正式发布以后，难免会出现bug。这时就需要创建一个分支，进行bug修补。
+修补bug分支是从Master分支上面分出来的。修补结束以后，再合并进Master和Develop分支。它的命名，可以采用fixbug-*的形式。
+
+创建一个修补bug分支：
+　　git checkout -b fixbug-0.1 master
+修补结束后，合并到master分支：
+　　git checkout master
+　　git merge --no-ff fixbug-0.1
+　　git tag -a 0.1.1
+再合并到develop分支：
+　　git checkout develop
+　　git merge --no-ff fixbug-0.1
+最后，删除"修补bug分支"：
+　　git branch -d fixbug-0.1
+
+
+
