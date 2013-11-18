@@ -763,8 +763,33 @@ git push bj1 master
 1. 登陆进github
 2. 创建一个新的项目，名字叫linux_commands
 3. 在命令行上，执行 git remote add origin https://github.com/chrisguo/linux_commands.git
-4. 在命令行上，执行 git push -u origin master
+4. 在命令行上，执行 git push -u origin master   -------把本地master同步到远程，如果远程没有就创建之。
    此过程中，需要输入github的用户名和密码
+5. 修改本地的若干文件，并且commit之后，需要把本地文件同步到github上：
+5.1  git remote -v ------->查看本地与远程
+5.2  git push origin master
+** 一个比较综合的执行过程
+远程有game_design_art的版本，本地更新了若干内容。
+要求：按照下面的“git最佳实践”，在develop上引入更新，并merge到master上，然后向远程提交。
+执行过程如下
+  812  git clone https://github.com/chrisguo/game_design_art
+  813  git status
+  818  git checkout -b develop master
+  819  git status
+  822  cp ../../game_design_art/game_design_notes.org  game_design_notes.org 
+  824  git status
+  826  git commit -m "添加原作者访谈，认识更新。增加101透镜和skinner box"
+  827  git add game_design_notes.org
+  828  git status
+  829  git commit -m "添加原作者访谈，认识更新。增加101透镜和skinner box"
+  831  git checkout master
+  832  git merge --no-ff develop
+  833  git status
+  837  git log -p 3
+  843  git remote -v
+  844  git push origin master
+
+搞定。
 
 * 创建命令别名
 Git 并不会推断你输入的几个字符将会是哪条命令，不过如果想偷懒，少敲几个命令的字符，可以用 git config 为命令设置别名。来看看下面的例子：
